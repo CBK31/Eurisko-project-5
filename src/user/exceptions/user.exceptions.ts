@@ -12,13 +12,25 @@ export class UserAlreadyExistsException extends HttpException {
   }
 }
 
-export class unAuthorizedException extends HttpException {
-  constructor() {
-    super('unauthorized access', HttpStatus.UNAUTHORIZED);
+// export class unAuthorizedException extends HttpException {
+//   constructor() {
+//     super('unauthorized access', HttpStatus.UNAUTHORIZED);
+//   }
+// }
+// export class unAuthenticateException extends HttpException {
+//   constructor() {
+//     super('unauthenticated', 401);
+//   }
+// }
+
+export class userNotFoundException extends HttpException {
+  constructor(email: string) {
+    super(`User with email ${email} not found`, HttpStatus.NOT_FOUND);
   }
 }
-export class unAuthenticateException extends HttpException {
+
+export class wrongEmailOrPasswordException extends HttpException {
   constructor() {
-    super('unauthenticated', 401);
+    super(`wrong email or password`, HttpStatus.BAD_REQUEST);
   }
 }

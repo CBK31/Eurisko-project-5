@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { activateUserDto, CreateUserDto } from './dto/user.dto';
+import { activateUserDto, CreateUserDto, LoginUserDto } from './dto/user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthenticationGuard } from 'src/shared/guards/authentication.guard';
 import { AuthorizationGuard } from 'src/shared/guards/authorization.guard';
@@ -21,22 +21,18 @@ import { Roles } from 'src/shared/roles.decorators';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(AuthenticationGuard, AuthorizationGuard)
-  @Post('create')
-  @Roles(['admin', 'client'])
+  //@UseGuards(AuthenticationGuard, AuthorizationGuard)
+  //@Roles(['admin', 'client'])
+
+  @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createUserDto: CreateUserDto) {
-    const userCreated = await this.userService.create(createUserDto);
-
-    return {
-      message: 'User created successfully',
-      user: { id: `${userCreated['_id']}`, email: `${userCreated['email']}` },
-    };
+    return await this.userService.create(createUserDto);
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Post('login')
+  async signIn(@Body() loginUserDto: LoginUserDto) {
+    return await this.userService.logIn(loginUserDto);
   }
 
   @Get(':id')

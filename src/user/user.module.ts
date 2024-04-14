@@ -17,7 +17,7 @@ import { SharedModule } from 'src/shared/shared.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('secret.JWTsecretKey'),
-        signOptions: { expiresIn: '60s' },
+        signOptions: { expiresIn: '300s' },
       }),
     }),
   ],
