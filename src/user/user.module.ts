@@ -7,6 +7,7 @@ import { MongooseModule, Schema } from '@nestjs/mongoose';
 import { User, userModel } from './schemas/user.schema';
 import { SharedModule } from 'src/shared/shared.module';
 import { RefreshToken, RefreshTokenModel } from './schemas/refreshToken.schema';
+import { OtpModule } from 'src/otp/otp.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { RefreshToken, RefreshTokenModel } from './schemas/refreshToken.schema';
     ]),
     ConfigModule,
     SharedModule,
+    OtpModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

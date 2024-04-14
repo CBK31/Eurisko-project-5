@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto, LoginUserDto } from './dto/user.dto';
+import { CreateUserDto, LoginUserDto, UserEmailDto } from './dto/user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Model, ObjectId, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -13,6 +13,7 @@ import {
 } from './exceptions/user.exceptions';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from './schemas/refreshToken.schema';
+import { OtpService } from 'src/otp/otp.service';
 
 @Injectable()
 export class UserService {
@@ -21,6 +22,7 @@ export class UserService {
     @InjectModel(RefreshToken.name)
     private RefreshTokenModel: Model<RefreshToken>,
     private jwtService: JwtService,
+    private readonly otpService: OtpService,
   ) {}
 
   async findOneUserByEmail(email: string) {
@@ -42,6 +44,7 @@ export class UserService {
   async findRefreshToken(userId) {
     return await this.RefreshTokenModel.findOne({ userId: userId });
   }
+
   async deleteRefreshToken(userId) {
     return await this.RefreshTokenModel.deleteOne({ userId: userId });
   }
@@ -119,6 +122,31 @@ export class UserService {
         throw new wrongEmailOrPasswordException();
       }
     }
+  }
+
+  async forgetPassword(userEmailDto: UserEmailDto) {
+    const userFinder = await this.findOneUserByEmail(userEmailDto.email);
+
+    if (!userFinder) {
+      throw new userNotFoundException(userEmailDto.email);
+    }
+    const id = userFinder['_id'];
+    const email = userFinder['email'];
+    // const userEmailAndId ={};
+
+    const verificationToken = await this.otpService.generateAndSendOtp(
+      id,
+      email,
+    );
+
+    return {
+      message: 'Otp sended successfully',
+      verificationToken: verificationToken,
+      user: {
+        id: `${userFinder['_id']}`,
+        email: `${userFinder['email']}`,
+      },
+    };
   }
 
   findAll() {

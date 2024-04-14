@@ -3,15 +3,18 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsString,
   MinLength,
 } from 'class-validator';
 
-export class LoginUserDto {
+export class UserEmailDto {
   @IsNotEmpty()
   @IsEmail()
   email: string;
+}
 
+export class LoginUserDto extends UserEmailDto {
   @IsNotEmpty()
   @IsString()
   @MinLength(8)
@@ -41,7 +44,7 @@ export class CreateCmsUserDto extends CreateUserDto {
 
 export class userIdDto {
   @IsNotEmpty()
-  @IsString()
+  @IsNumber()
   id: string;
 }
 export class activateUserDto extends userIdDto {

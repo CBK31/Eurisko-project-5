@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import config from './config/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SharedModule } from './shared/shared.module';
+import { OtpModule } from './otp/otp.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { SharedModule } from './shared/shared.module';
       load: [config],
     }),
     SharedModule,
+    OtpModule,
   ],
   controllers: [AppController],
   providers: [AppService],

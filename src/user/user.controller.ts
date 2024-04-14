@@ -11,7 +11,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { activateUserDto, CreateUserDto, LoginUserDto } from './dto/user.dto';
+import {
+  activateUserDto,
+  CreateUserDto,
+  LoginUserDto,
+  UserEmailDto,
+} from './dto/user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthenticationGuard } from 'src/shared/guards/authentication.guard';
 import { AuthorizationGuard } from 'src/shared/guards/authorization.guard';
@@ -34,6 +39,12 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async signIn(@Body() loginUserDto: LoginUserDto) {
     return await this.userService.logIn(loginUserDto);
+  }
+
+  @Post('forgetpassword')
+  @HttpCode(HttpStatus.OK)
+  async forgetpassword(@Body() userEmailDto: UserEmailDto) {
+    return await this.userService.forgetPassword(userEmailDto);
   }
 
   @Get(':id')
