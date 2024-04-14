@@ -1,7 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt/dist';
-import { Observable } from 'rxjs';
 import { myRoles } from '../roles.decorators';
 import { unAuthorizedException } from '../exceptions';
 import { InjectModel } from '@nestjs/mongoose';
