@@ -31,6 +31,7 @@ export class UserController {
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   async signIn(@Body() loginUserDto: LoginUserDto) {
     return await this.userService.logIn(loginUserDto);
   }

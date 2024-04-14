@@ -3,7 +3,7 @@ import { CreateUserDto, LoginUserDto } from './dto/user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Model, ObjectId, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from './user.schema';
+import { User } from './schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import {
@@ -12,11 +12,14 @@ import {
   wrongEmailOrPasswordException,
 } from './exceptions/user.exceptions';
 import { JwtService } from '@nestjs/jwt';
+import { RefreshToken } from './schemas/refreshToken.schema';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(RefreshToken.name)
+    private RefreshTokenModel: Model<RefreshToken>,
     private jwtService: JwtService,
   ) {}
 
@@ -24,12 +27,23 @@ export class UserService {
     return await this.userModel.findOne({ email: email });
   }
 
-  generateAccessToken(id: Types.ObjectId, email: string): string {
+  async generateAccessToken(
+    id: Types.ObjectId,
+    email: string,
+  ): Promise<string> {
     const payload = { email: email, id: id };
-    return this.jwtService.sign(payload);
+    return await this.jwtService.sign(payload);
   }
-  generateRefreshToken(): string {
-    return crypto.randomBytes(32).toString('hex');
+
+  async generateRefreshToken(): Promise<string> {
+    return crypto.randomBytes(64).toString('hex');
+  }
+
+  async findRefreshToken(userId) {
+    return await this.RefreshTokenModel.findOne({ userId: userId });
+  }
+  async deleteRefreshToken(userId) {
+    return await this.RefreshTokenModel.deleteOne({ userId: userId });
   }
 
   async create(createUserDto: CreateUserDto) {
@@ -67,18 +81,33 @@ export class UserService {
         userFinder.password,
       );
       if (passChecker) {
-        const generatedToken = this.generateAccessToken(
+        const accessToken = await this.generateAccessToken(
           userFinder['_id'],
           userFinder['email'],
         );
 
-        const refreshToken = this.generateRefreshToken();
+        const refreshTokenFinder = await this.findRefreshToken(
+          userFinder['_id'],
+        );
 
-        //bedde sayiv hel refreshToken bel database w eb3ato lal user
+        if (refreshTokenFinder) {
+          await this.deleteRefreshToken(userFinder['_id']);
+        }
+
+        const refreshToken = await this.generateRefreshToken();
+
+        const currentTime = new Date();
+        const refreshTokenSaver = new this.RefreshTokenModel({
+          userId: userFinder['_id'],
+          refreshToken: refreshToken,
+          expirationTime: new Date(currentTime.getTime() + 300 * 60000),
+        });
+        refreshTokenSaver.save();
 
         return {
           message: 'User created successfully',
-          accessToken: generatedToken,
+          accessToken: accessToken,
+          refreshToken: refreshToken,
           user: {
             id: `${userFinder['_id']}`,
             email: `${userFinder['email']}`,

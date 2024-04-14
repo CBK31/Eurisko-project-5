@@ -5,7 +5,7 @@ import { myRoles, Roles } from './roles.decorators';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, userModel } from 'src/user/user.schema';
+import { User, userModel } from 'src/user/schemas/user.schema';
 
 @Module({
   controllers: [],
