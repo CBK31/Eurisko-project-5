@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  ActivateUserDto,
   ChangePasswordDto,
   CreateCmsUserDto,
   CreateUserDto,
@@ -53,7 +54,7 @@ export class UserService {
         password: hashedPassword,
       },
     };
-    return await this.userModel.updateOne({ _id: userId }, updateDoc);
+    return await this.userModel.findByIdAndUpdate(userId, updateDoc);
   }
 
   async generateAccessToken(id): Promise<string> {
@@ -251,6 +252,24 @@ export class UserService {
     }
 
     throw new refreshTokenOrUserInvalidException();
+  }
+
+  async updateActivationStatus(id, isActivated) {
+    const userFinder = await this.findUserById(id);
+    if (!userFinder) {
+      throw new UserIdNotFoundException();
+    }
+
+    const updateDoc = {
+      $set: {
+        isActivated: isActivated,
+      },
+    };
+    await this.userModel.findByIdAndUpdate(id, updateDoc);
+
+    return {
+      message: 'account activation changed successfully',
+    };
   }
 
   findAll() {

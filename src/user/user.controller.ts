@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
-  activateUserDto,
+  ActivateUserDto,
   ChangePasswordDto,
   CreateCmsUserDto,
   CreateUserDto,
@@ -86,17 +86,23 @@ export class UserController {
     return await this.userService.getaccesstoken(getAccessTokenDto);
   }
 
-  // from chatGPT to update my isActivate user
+  // @Post('activateuser')
+  // async activateUser(@Body() activateUserDto: ActivateUserDto) {
+  //   return await this.userService.activateUser(activateUserDto);
+  // }
+
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Roles(['admin', 'employee'])
   @Patch(':id/activate')
   async updateActivationStatus(
     @Param('id') id: string,
-    @Body() isActivatedDTO: activateUserDto,
+    @Body() activateUserDto: ActivateUserDto,
   ) {
-    // Use the service to update the activation status
-    // For example:
-    // return this.userService.updateActivationStatus(id, isActivatedDTO.isActivated);
+    return this.userService.updateActivationStatus(
+      id,
+      activateUserDto.isActivated,
+    );
   }
-  // --------------- 5alsit taba3 el isActivate -------------------------
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {

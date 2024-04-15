@@ -59,7 +59,14 @@ export class userIdDto {
   @IsMongoId()
   id: string;
 }
-export class activateUserDto extends userIdDto {
+
+// export class ActivateUserDto extends userIdDto {
+//   @IsNotEmpty()
+//   @IsBoolean()
+//   isActivated: boolean;
+// }
+export class ActivateUserDto {
+  @IsNotEmpty()
   @IsBoolean()
   isActivated: boolean;
 }
