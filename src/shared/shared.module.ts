@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthenticationGuard } from './guards/authentication.guard';
 import { AuthorizationGuard } from './guards/authorization.guard';
-import { myRoles, Roles } from './roles.decorators';
+import { myRoles, Roles } from './decorators/roles.decorators';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';

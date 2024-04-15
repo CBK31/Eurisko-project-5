@@ -2,6 +2,7 @@ import {
   IsBoolean,
   IsEmail,
   IsEnum,
+  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -19,6 +20,13 @@ export class LoginUserDto extends UserEmailDto {
   @IsString()
   @MinLength(8)
   password: string;
+}
+
+export class ChangePasswordDto extends LoginUserDto {
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(8)
+  newPassword: string;
 }
 
 export class CreateUserDto extends LoginUserDto {
@@ -43,8 +51,7 @@ export class CreateCmsUserDto extends CreateUserDto {
 }
 
 export class userIdDto {
-  @IsNotEmpty()
-  @IsString()
+  @IsMongoId()
   id: string;
 }
 export class activateUserDto extends userIdDto {
@@ -52,7 +59,7 @@ export class activateUserDto extends userIdDto {
   isActivated: boolean;
 }
 
-export class ResetPasswordDto extends userIdDto {
+export class ResetPasswordDto {
   @IsNotEmpty()
   @IsString()
   @MinLength(8)
@@ -62,4 +69,10 @@ export class ResetPasswordDto extends userIdDto {
   @IsString()
   @MinLength(8)
   confirmPassword: string;
+}
+
+export class GetAccessTokenDto extends userIdDto {
+  @IsNotEmpty()
+  @IsString()
+  refreshToken: string;
 }

@@ -13,7 +13,10 @@ import {
 import { UserService } from './user.service';
 import {
   activateUserDto,
+  ChangePasswordDto,
+  CreateCmsUserDto,
   CreateUserDto,
+  GetAccessTokenDto,
   LoginUserDto,
   ResetPasswordDto,
   UserEmailDto,
@@ -21,7 +24,8 @@ import {
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthenticationGuard } from 'src/shared/guards/authentication.guard';
 import { AuthorizationGuard } from 'src/shared/guards/authorization.guard';
-import { Roles } from 'src/shared/roles.decorators';
+import { Roles } from 'src/shared/decorators/roles.decorators';
+import { GetUser } from 'src/shared/decorators/getUser.decorators';
 
 @Controller('user')
 export class UserController {
@@ -36,6 +40,14 @@ export class UserController {
     return await this.userService.create(createUserDto);
   }
 
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Roles(['admin'])
+  @Post('signupcmsuser')
+  @HttpCode(HttpStatus.CREATED)
+  async createCms(@Body() createCmsUserDto: CreateCmsUserDto) {
+    return await this.userService.createCmsUser(createCmsUserDto);
+  }
+
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async signIn(@Body() loginUserDto: LoginUserDto) {
@@ -44,15 +56,34 @@ export class UserController {
 
   @Post('forgetpassword')
   @HttpCode(HttpStatus.OK)
-  async forgetpassword(@Body() userEmailDto: UserEmailDto) {
+  async forgetPassword(@Body() userEmailDto: UserEmailDto) {
     return await this.userService.forgetPassword(userEmailDto);
+  }
+
+  @UseGuards(AuthenticationGuard)
+  @Get('changepassword')
+  @HttpCode(HttpStatus.OK)
+  async changePassword(
+    @Body() changePasswordDto: ChangePasswordDto,
+    @GetUser() userId: string,
+  ) {
+    return await this.userService.changePassword(changePasswordDto, userId);
   }
 
   @UseGuards(AuthenticationGuard)
   @Post('resetpassword')
   @HttpCode(HttpStatus.OK)
-  async resetpassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return await this.userService.resetpassword(resetPasswordDto);
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+    @GetUser() userId: string,
+  ) {
+    return await this.userService.resetPassword(resetPasswordDto, userId);
+  }
+
+  @Get('getaccesstoken')
+  @HttpCode(HttpStatus.OK)
+  async getaccessToken(@Body() getAccessTokenDto: GetAccessTokenDto) {
+    return await this.userService.getaccesstoken(getAccessTokenDto);
   }
 
   // from chatGPT to update my isActivate user

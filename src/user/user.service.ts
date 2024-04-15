@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import {
+  ChangePasswordDto,
+  CreateCmsUserDto,
   CreateUserDto,
+  GetAccessTokenDto,
   LoginUserDto,
   ResetPasswordDto,
   UserEmailDto,
@@ -14,8 +17,11 @@ import * as crypto from 'crypto';
 import {
   noAccountFoundForSecurity,
   UserAlreadyExistsException,
+  UserIdNotFoundException,
   userNotFoundException,
   wrongEmailOrPasswordException,
+  resetPasswordException,
+  refreshTokenOrUserInvalidException,
 } from './exceptions/user.exceptions';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from './schemas/refreshToken.schema';
@@ -35,11 +41,22 @@ export class UserService {
     return await this.userModel.findOne({ email: email });
   }
 
-  async generateAccessToken(
-    id: Types.ObjectId,
-    email: string,
-  ): Promise<string> {
-    const payload = { email: email, id: id };
+  async findUserById(userId) {
+    return await this.userModel.findById(userId);
+  }
+
+  async updateUserPassword(userId, password) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const updateDoc = {
+      $set: {
+        password: hashedPassword,
+      },
+    };
+    return await this.userModel.updateOne({ _id: userId }, updateDoc);
+  }
+
+  async generateAccessToken(id): Promise<string> {
+    const payload = { id: id };
     return await this.jwtService.sign(payload);
   }
 
@@ -82,6 +99,33 @@ export class UserService {
     }
   }
 
+  async createCmsUser(createCmsUserDto: CreateCmsUserDto) {
+    if (await this.findOneUserByEmail(createCmsUserDto.email)) {
+      throw new UserAlreadyExistsException(createCmsUserDto.email);
+    } else {
+      const { firstName, lastName, email, password, role } = createCmsUserDto;
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newUser = new this.userModel({
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        role: role,
+        isActivated: true,
+      });
+
+      const userCreated = await newUser.save();
+      return {
+        message: 'User created successfully',
+        user: {
+          id: `${userCreated['_id']}`,
+          email: `${userCreated['email']}`,
+        },
+      };
+    }
+  }
+
   async logIn(loginUserDto: LoginUserDto) {
     const userFinder = await this.findOneUserByEmail(loginUserDto.email);
 
@@ -90,29 +134,21 @@ export class UserService {
     } else {
       const { email, password, _id, firstName, lastName } = userFinder;
 
-      let passChecker = await bcrypt.compare(
-        loginUserDto.password,
-        userFinder.password,
-      );
+      let passChecker = await bcrypt.compare(loginUserDto.password, password);
       if (passChecker) {
-        const accessToken = await this.generateAccessToken(
-          userFinder['_id'],
-          userFinder['email'],
-        );
+        const accessToken = await this.generateAccessToken(_id);
 
-        const refreshTokenFinder = await this.findRefreshToken(
-          userFinder['_id'],
-        );
+        const refreshTokenFinder = await this.findRefreshToken(_id);
 
         if (refreshTokenFinder) {
-          await this.deleteRefreshToken(userFinder['_id']);
+          await this.deleteRefreshToken(_id);
         }
 
         const refreshToken = await this.generateRefreshToken();
 
         const currentTime = new Date();
         const refreshTokenSaver = new this.RefreshTokenModel({
-          userId: userFinder['_id'],
+          userId: _id,
           refreshToken: refreshToken,
           expirationTime: new Date(currentTime.getTime() + 300 * 60000),
         });
@@ -123,10 +159,10 @@ export class UserService {
           accessToken: accessToken,
           refreshToken: refreshToken,
           user: {
-            id: `${userFinder['_id']}`,
-            email: `${userFinder['email']}`,
-            firstName: `${userFinder['firstName']}`,
-            lastName: `${userFinder['lastName']}`,
+            id: `${_id}`,
+            email: `${email}`,
+            firstName: `${firstName}`,
+            lastName: `${lastName}`,
           },
         };
       } else {
@@ -142,7 +178,6 @@ export class UserService {
       throw new noAccountFoundForSecurity();
     }
     const { email, _id } = userFinder;
-    // const email = userFinder['email'];
 
     const verificationToken = await this.otpService.generateAndSendOtp(email);
 
@@ -155,9 +190,48 @@ export class UserService {
       },
     };
   }
-  //i7wehxdjw8f78hwsg7hfimweuhfuidciusfcviucuiyasfgcuiasgcuisagcuyhsduyhcduyhcvuyshuhfsvfjhavuhcvsdauygc
-  async resetpassword(resetPasswordDto: ResetPasswordDto) {
-    const { id, newPassword, confirmPassword } = resetPasswordDto;
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto, userId) {
+    const { newPassword, confirmPassword } = resetPasswordDto;
+    if (newPassword == confirmPassword) {
+      const userFinder = await this.findUserById(userId);
+      await this.updateUserPassword(userId, newPassword);
+
+      return {
+        message: 'Your password has been successfully reset',
+        user: {
+          id: `${userId}`,
+          email: `${userFinder['email']}`,
+        },
+      };
+    }
+
+    throw new resetPasswordException();
+  }
+
+  async changePassword(changePasswordDto: ChangePasswordDto, userId) {}
+
+  async getaccesstoken(getAccessTokenDto: GetAccessTokenDto) {
+    const { refreshToken, id } = getAccessTokenDto;
+
+    const refreshTokenFinder = await this.findRefreshToken(id);
+
+    if (
+      refreshTokenFinder &&
+      refreshTokenFinder['refreshToken'] == refreshToken &&
+      refreshTokenFinder['expirationTime'] > new Date()
+    ) {
+      const newAccessToken = await this.generateAccessToken(id);
+      return {
+        message: 'Access token successfully generated ',
+        accessToken: newAccessToken,
+        user: {
+          id: `${id}`,
+        },
+      };
+    }
+
+    throw new refreshTokenOrUserInvalidException();
   }
 
   findAll() {
