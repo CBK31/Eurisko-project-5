@@ -11,6 +11,7 @@ import { User, userModel } from 'src/user/schemas/user.schema';
   controllers: [],
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: userModel }]),
+
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -11,11 +11,9 @@ import {
   otpAlreadyExistAndValidException,
 } from './exceptions/otp.exceptions';
 import axios from 'axios';
-import {
-  noAccountFoundForSecurity,
-  userNotFoundException,
-} from 'src/user/exceptions/user.exceptions';
+import { noAccountFoundForSecurity } from 'src/user/exceptions/user.exceptions';
 import { JwtService } from '@nestjs/jwt';
+
 @Injectable()
 export class OtpService {
   constructor(
