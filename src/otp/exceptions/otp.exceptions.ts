@@ -31,7 +31,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class otpAlreadyExistAndValidException extends HttpException {
   constructor() {
-    super(`otp already exist and valid`, HttpStatus.BAD_REQUEST);
+    super(`otp already exist and valid`, HttpStatus.FORBIDDEN);
   }
 }
 // unvalid otp exception
@@ -41,3 +41,9 @@ export class otpAlreadyExistAndValidException extends HttpException {
 //       super(`otp already exist and valid`, HttpStatus.BAD_REQUEST);
 //     }
 //   }
+
+export class InvalidOtpException extends HttpException {
+  constructor() {
+    super(`invalid OTP`, HttpStatus.FORBIDDEN);
+  }
+}

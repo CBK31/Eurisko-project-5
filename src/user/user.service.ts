@@ -130,14 +130,10 @@ export class UserService {
     if (!userFinder) {
       throw new userNotFoundException(userEmailDto.email);
     }
-    const id = userFinder['_id'];
-    const email = userFinder['email'];
-    // const userEmailAndId ={};
 
-    const verificationToken = await this.otpService.generateAndSendOtp(
-      id,
-      email,
-    );
+    const email = userFinder['email'];
+
+    const verificationToken = await this.otpService.generateAndSendOtp(email);
 
     return {
       message: 'Otp sended successfully',

@@ -3,15 +3,20 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/user/schemas/user.schema';
 import { OTP } from './schema/otp.schema';
-import { GenerateOtpDto, SendOtpDto } from './dto/otp-dto';
+import { ConfigService } from '@nestjs/config';
+import { GenerateOtpDto, SendOtpDto, VerifyOtpDto } from './dto/otp-dto';
 import * as crypto from 'crypto';
-import { otpAlreadyExistAndValidException } from './exceptions/otp.exceptions';
-
+import {
+  InvalidOtpException,
+  otpAlreadyExistAndValidException,
+} from './exceptions/otp.exceptions';
+import axios from 'axios';
 @Injectable()
 export class OtpService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(OTP.name) private OTPModel: Model<OTP>,
+    private configService: ConfigService,
   ) {}
 
   async findOneUserByEmail(email) {
@@ -26,26 +31,24 @@ export class OtpService {
     return await this.OTPModel.deleteOne({ _id: otpId });
   }
 
-  //TO BE CONTINUED
-  async sendExistingValidOtp(email) {
-    const OtpFinderAndValidator = await this.OtpIsValid(email);
-    if (!OtpFinderAndValidator) {
-      console.log('send unvalid otp exception');
-    }
+  async sendOtp(email: string, otpCode: any) {
+    const data = new URLSearchParams({
+      apikey: this.configService.get<string>('axiosApiInfo.apiKey'),
+      subject: 'your OTP code',
+      from: this.configService.get<string>('axiosApiInfo.senderEmail'),
+      to: email as string,
+      bodyHtml: `your OTP code is :  ${otpCode}`,
+      isTransactional: 'true',
+    });
 
-    console.log('sending your Otp');
+    await axios.post('https://api.elasticemail.com/v2/email/send', data);
+    return true;
   }
 
-  async OtpIsValid(email?: string, id?: string) {
-    let userid;
-    if (email) {
-      const userFinder = await this.findOneUserByEmail(email);
-      userid = userFinder['_id'];
-    } else if (id) {
-      userid = id;
-    } else {
-      return false;
-    }
+  async OtpIsValid(email: string) {
+    const userFinder = await this.findOneUserByEmail(email);
+    const userid = userFinder['_id'];
+
     const otpFinder = await this.findOtpByUserId(userid);
     const currentDate = new Date();
     if (
@@ -61,19 +64,19 @@ export class OtpService {
     return false;
   }
 
-  async generateAndSendOtp(id, email) {
-    const OtpFinderAndValidator = await this.OtpIsValid(id);
+  async generateAndSendOtp(email: string) {
+    const OtpFinderAndValidator = await this.OtpIsValid(email);
     if (OtpFinderAndValidator) {
-      console.log('send otp already exist and valid error ');
       throw new otpAlreadyExistAndValidException();
     }
 
-    const newOtp = Math.floor(1000 + Math.random() * 9999).toString();
+    const userFinder = await this.findOneUserByEmail(email);
+    const newOtp = Math.floor(1000 + Math.random() * 9999);
     const verificationToken = crypto.randomBytes(64).toString('hex');
     const currentTime = new Date();
 
     const otpSaver = new this.OTPModel({
-      userId: id,
+      userId: userFinder['_id'],
       verificationToken: verificationToken,
       otpCode: newOtp,
       expirationDate: new Date(currentTime.getTime() + 5 * 60000),
@@ -83,36 +86,64 @@ export class OtpService {
 
     const verificationTokenSaved = await otpSaver.save();
 
-    await this.sendExistingValidOtp(email);
+    await this.sendOtp(email, newOtp);
 
     return verificationTokenSaved.verificationToken;
   }
+
+  async resendOtp(email: string) {
+    const OtpFinderAndValidator = await this.OtpIsValid(email);
+    if (OtpFinderAndValidator) {
+      await this.sendOtp(email, OtpFinderAndValidator['otpCode']);
+    } else {
+      await this.generateAndSendOtp(email);
+    }
+
+    return {
+      message: 'Otp sended successfully',
+      verificationToken: OtpFinderAndValidator['verificationToken'],
+      user: {
+        id: OtpFinderAndValidator['userId'],
+        email: email,
+      },
+    };
+  }
+
+  // TO BE TESTED AND CONTINUED
+
+  async verifyOtp(verifyOtpDto: VerifyOtpDto) {
+    const OtpFinderAndValidator = await this.OtpIsValid(verifyOtpDto.email);
+    if (
+      OtpFinderAndValidator &&
+      OtpFinderAndValidator['otpCode'] == verifyOtpDto.otpCode &&
+      OtpFinderAndValidator['verificationToken'] ==
+        verifyOtpDto.verificationToken
+    ) {
+      const updateDoc = {
+        $set: {
+          isValid: false,
+        },
+      };
+      await this.OTPModel.updateOne(
+        { _id: OtpFinderAndValidator['_id'] },
+        updateDoc,
+      );
+
+      return {
+        message: 'Otp verified successfully',
+      };
+    } else if (OtpFinderAndValidator) {
+      const updateDoc = {
+        $inc: {
+          life: -1,
+        },
+      };
+      await this.OTPModel.updateOne(
+        { _id: OtpFinderAndValidator['_id'] },
+        updateDoc,
+      );
+    }
+
+    throw new InvalidOtpException();
+  }
 }
-
-// if (userFinder) {
-//   const otpFinder = await this.findOtpByUserId(userFinder['_id']);
-//   const currentDate = new Date();
-//   if (
-//     otpFinder &&
-//     otpFinder['expirationDate'].getTime() > currentDate.getTime()
-//   ) {
-//     console.log('send the existing Otp ');
-//   } else {
-//     console.log('current Time : ' + currentDate.getTime());
-//     console.log('otpFinder ' + otpFinder);
-//     console.log(
-//       'otp expiration date ' + otpFinder['expirationDate'].getTime(),
-//     );
-//     console.log(
-//       'is obsolet ? :' +
-//         (otpFinder['expirationDate'].getTime() < currentDate.getTime()),
-//     );
-
-//     console.log('userDoNotHaveOtpException');
-
-//     // return error userDoNotHaveOtpException
-//   }
-// } else {
-//   console.log('userNotFoundException');
-//   // return error userNotFoundException
-// }
