@@ -22,6 +22,7 @@ import {
   wrongEmailOrPasswordException,
   resetPasswordException,
   refreshTokenOrUserInvalidException,
+  PasswordUnmatchException,
 } from './exceptions/user.exceptions';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from './schemas/refreshToken.schema';
@@ -134,7 +135,7 @@ export class UserService {
     } else {
       const { email, password, _id, firstName, lastName } = userFinder;
 
-      let passChecker = await bcrypt.compare(loginUserDto.password, password);
+      const passChecker = await bcrypt.compare(loginUserDto.password, password);
       if (passChecker) {
         const accessToken = await this.generateAccessToken(_id);
 
@@ -209,7 +210,25 @@ export class UserService {
     throw new resetPasswordException();
   }
 
-  async changePassword(changePasswordDto: ChangePasswordDto, userId) {}
+  async changePassword(changePasswordDto: ChangePasswordDto, userId) {
+    const { oldPassword, newPassword } = changePasswordDto;
+    const userFinder = await this.findUserById(userId);
+    const { password, email } = userFinder;
+    let passChecker = await bcrypt.compare(oldPassword, password);
+    if (passChecker) {
+      await this.updateUserPassword(userId, newPassword);
+
+      return {
+        message: 'Your password has been successfully updated',
+        user: {
+          id: `${userId}`,
+          email: `${email}`,
+        },
+      };
+    }
+
+    throw new PasswordUnmatchException();
+  }
 
   async getaccesstoken(getAccessTokenDto: GetAccessTokenDto) {
     const { refreshToken, id } = getAccessTokenDto;

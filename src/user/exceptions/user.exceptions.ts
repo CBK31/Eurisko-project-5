@@ -44,3 +44,9 @@ export class refreshTokenOrUserInvalidException extends HttpException {
     super(`can not generate access token , log in again`, HttpStatus.FORBIDDEN);
   }
 }
+
+export class PasswordUnmatchException extends HttpException {
+  constructor() {
+    super(`incorrect password`, HttpStatus.BAD_REQUEST);
+  }
+}

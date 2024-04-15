@@ -61,7 +61,7 @@ export class UserController {
   }
 
   @UseGuards(AuthenticationGuard)
-  @Get('changepassword')
+  @Post('changepassword')
   @HttpCode(HttpStatus.OK)
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,

@@ -22,7 +22,12 @@ export class LoginUserDto extends UserEmailDto {
   password: string;
 }
 
-export class ChangePasswordDto extends LoginUserDto {
+export class ChangePasswordDto {
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(8)
+  oldPassword: string;
+
   @IsNotEmpty()
   @IsString()
   @MinLength(8)
