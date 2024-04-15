@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
@@ -31,9 +32,6 @@ import { GetUser } from 'src/shared/decorators/getUser.decorators';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  //@UseGuards(AuthenticationGuard, AuthorizationGuard)
-  //@Roles(['admin', 'client'])
-
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createUserDto: CreateUserDto) {
@@ -44,25 +42,22 @@ export class UserController {
   @Roles(['admin'])
   @Post('signupcmsuser')
   @HttpCode(HttpStatus.CREATED)
-  async createCms(@Body() createCmsUserDto: CreateCmsUserDto) {
+  async createCmsUser(@Body() createCmsUserDto: CreateCmsUserDto) {
     return await this.userService.createCmsUser(createCmsUserDto);
   }
 
   @Post('login')
-  @HttpCode(HttpStatus.OK)
   async signIn(@Body() loginUserDto: LoginUserDto) {
     return await this.userService.logIn(loginUserDto);
   }
 
   @Post('forgetpassword')
-  @HttpCode(HttpStatus.OK)
   async forgetPassword(@Body() userEmailDto: UserEmailDto) {
     return await this.userService.forgetPassword(userEmailDto);
   }
 
   @UseGuards(AuthenticationGuard)
   @Post('changepassword')
-  @HttpCode(HttpStatus.OK)
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
     @GetUser() userId: string,
@@ -72,7 +67,6 @@ export class UserController {
 
   @UseGuards(AuthenticationGuard)
   @Post('resetpassword')
-  @HttpCode(HttpStatus.OK)
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
     @GetUser() userId: string,
@@ -81,15 +75,12 @@ export class UserController {
   }
 
   @Get('getaccesstoken')
-  @HttpCode(HttpStatus.OK)
-  async getaccessToken(@Body() getAccessTokenDto: GetAccessTokenDto) {
-    return await this.userService.getaccesstoken(getAccessTokenDto);
+  async getaccessToken(
+    @Body() getAccessTokenDto: GetAccessTokenDto,
+    @Param('id') id: string,
+  ) {
+    return await this.userService.getaccesstoken(id, getAccessTokenDto);
   }
-
-  // @Post('activateuser')
-  // async activateUser(@Body() activateUserDto: ActivateUserDto) {
-  //   return await this.userService.activateUser(activateUserDto);
-  // }
 
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   @Roles(['admin', 'employee'])
@@ -104,13 +95,27 @@ export class UserController {
     );
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Roles(['admin'])
+  @Patch(':id/toadmin')
+  async CmsRoleToAdmin(@Param('id') id: string) {
+    return this.userService.CmsRoleToAdmin(id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Roles(['admin', 'employee'])
+  @Get('mycmsdetails')
+  async GetMyCmsDetails(@GetUser() userId: string) {
+    return await this.userService.GetMyCmsDetails(userId);
+  }
+
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Roles(['admin', 'employee'])
+  @Get('allcmsdetails')
+  async GetAllCmsDetails(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ) {
+    return await this.userService.GetAllCmsDetails(+page, +limit);
   }
 }

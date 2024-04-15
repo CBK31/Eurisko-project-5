@@ -28,6 +28,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from './schemas/refreshToken.schema';
 import { OtpService } from 'src/otp/otp.service';
+import { Roles } from 'src/shared/decorators/roles.decorators';
 
 @Injectable()
 export class UserService {
@@ -44,7 +45,11 @@ export class UserService {
   }
 
   async findUserById(userId) {
-    return await this.userModel.findById(userId);
+    try {
+      return await this.userModel.findById(userId);
+    } catch (error) {
+      throw new UserIdNotFoundException();
+    }
   }
 
   async updateUserPassword(userId, password) {
@@ -231,8 +236,8 @@ export class UserService {
     throw new PasswordUnmatchException();
   }
 
-  async getaccesstoken(getAccessTokenDto: GetAccessTokenDto) {
-    const { refreshToken, id } = getAccessTokenDto;
+  async getaccesstoken(id, getAccessTokenDto: GetAccessTokenDto) {
+    const { refreshToken } = getAccessTokenDto;
 
     const refreshTokenFinder = await this.findRefreshToken(id);
 
@@ -254,7 +259,7 @@ export class UserService {
     throw new refreshTokenOrUserInvalidException();
   }
 
-  async updateActivationStatus(id, isActivated) {
+  async updateActivationStatus(id: string, isActivated: boolean) {
     const userFinder = await this.findUserById(id);
     if (!userFinder) {
       throw new UserIdNotFoundException();
@@ -272,19 +277,81 @@ export class UserService {
     };
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async CmsRoleToAdmin(id) {
+    const userFinder = await this.findUserById(id);
+    if (!userFinder) {
+      throw new UserIdNotFoundException();
+    }
+
+    const updateDoc = {
+      $set: {
+        role: 'admin',
+      },
+    };
+    await this.userModel.findByIdAndUpdate(id, updateDoc);
+
+    return {
+      message: 'account role changed to admin successfully',
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async GetMyCmsDetails(id) {
+    return await this.findUserById(id);
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+  async GetAllCmsDetails(page: number, limit: number) {
+    const skip = (page - 1) * limit;
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+    const data = await this.userModel
+      .find({ role: { $in: ['admin', 'employee'] } })
+      .skip(skip)
+      .limit(limit)
+      .exec();
+
+    const total = await this.userModel.countDocuments({
+      role: { $in: ['admin', 'employee'] },
+    });
+
+    return { data, total, page, limit };
   }
+  // const pipeline = [
+  //   {
+  //     $match: {
+  //       role: { $in: ['admin', 'employee'] },
+  //     },
+  //   },
+  //   {
+  //     $facet: {
+  //       data: [{ $skip: (page - 1) * limit }, { $limit: limit }],
+  //       total: [
+  //         {
+  //           $count: 'count',
+  //         },
+  //       ],
+  //     },
+  //   },
+  // ];
+
+  // const result = await this.userModel.aggregate(pipeline);
+
+  // const data = result[0].data;
+  // const total = result[0].total.length > 0 ? result[0].total[0].count : 0;
+
+  // return { data, total, page, limit };
+
+  // findAll() {
+  //   return `This action returns all user`;
+  // }
+
+  // findOne(id: number) {
+  //   return `This action returns a #${id} user`;
+  // }
+
+  // update(id: number, updateUserDto: UpdateUserDto) {
+  //   return `This action updates a #${id} user`;
+  // }
+
+  // remove(id: number) {
+  //   return `This action removes a #${id} user`;
+  // }
 }

@@ -55,10 +55,10 @@ export class CreateCmsUserDto extends CreateUserDto {
   role: UserRole;
 }
 
-export class userIdDto {
-  @IsMongoId()
-  id: string;
-}
+// export class userIdDto {
+//   @IsMongoId()
+//   id: string;
+// }
 
 // export class ActivateUserDto extends userIdDto {
 //   @IsNotEmpty()
@@ -83,7 +83,8 @@ export class ResetPasswordDto {
   confirmPassword: string;
 }
 
-export class GetAccessTokenDto extends userIdDto {
+// ahyde kenit extended men userIdDto
+export class GetAccessTokenDto {
   @IsNotEmpty()
   @IsString()
   refreshToken: string;
