@@ -11,12 +11,18 @@ import {
   otpAlreadyExistAndValidException,
 } from './exceptions/otp.exceptions';
 import axios from 'axios';
+import {
+  noAccountFoundForSecurity,
+  userNotFoundException,
+} from 'src/user/exceptions/user.exceptions';
+import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class OtpService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(OTP.name) private OTPModel: Model<OTP>,
     private configService: ConfigService,
+    private jwtService: JwtService,
   ) {}
 
   async findOneUserByEmail(email) {
@@ -47,6 +53,9 @@ export class OtpService {
 
   async OtpIsValid(email: string) {
     const userFinder = await this.findOneUserByEmail(email);
+    if (!userFinder) {
+      throw new noAccountFoundForSecurity();
+    }
     const userid = userFinder['_id'];
 
     const otpFinder = await this.findOtpByUserId(userid);
@@ -93,23 +102,23 @@ export class OtpService {
 
   async resendOtp(email: string) {
     const OtpFinderAndValidator = await this.OtpIsValid(email);
+    let verificationToken;
     if (OtpFinderAndValidator) {
       await this.sendOtp(email, OtpFinderAndValidator['otpCode']);
+      verificationToken = OtpFinderAndValidator['verificationToken'];
     } else {
-      await this.generateAndSendOtp(email);
+      verificationToken = await this.generateAndSendOtp(email);
     }
 
     return {
       message: 'Otp sended successfully',
-      verificationToken: OtpFinderAndValidator['verificationToken'],
+      verificationToken: verificationToken,
       user: {
         id: OtpFinderAndValidator['userId'],
         email: email,
       },
     };
   }
-
-  // TO BE TESTED AND CONTINUED
 
   async verifyOtp(verifyOtpDto: VerifyOtpDto) {
     const OtpFinderAndValidator = await this.OtpIsValid(verifyOtpDto.email);
@@ -121,7 +130,7 @@ export class OtpService {
     ) {
       const updateDoc = {
         $set: {
-          isValid: false,
+          isUsed: true,
         },
       };
       await this.OTPModel.updateOne(
@@ -129,8 +138,17 @@ export class OtpService {
         updateDoc,
       );
 
+      const payload = {
+        id: OtpFinderAndValidator['userId'],
+        email: verifyOtpDto.email,
+      };
+
       return {
-        message: 'Otp verified successfully',
+        message: 'Otp sended successfully',
+        accessToken: this.jwtService.sign(payload),
+        user: {
+          id: `${OtpFinderAndValidator['userId']}`,
+        },
       };
     } else if (OtpFinderAndValidator) {
       const updateDoc = {

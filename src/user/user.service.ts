@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto, LoginUserDto, UserEmailDto } from './dto/user.dto';
+import {
+  CreateUserDto,
+  LoginUserDto,
+  ResetPasswordDto,
+  UserEmailDto,
+} from './dto/user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Model, ObjectId, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -7,6 +12,7 @@ import { User } from './schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import {
+  noAccountFoundForSecurity,
   UserAlreadyExistsException,
   userNotFoundException,
   wrongEmailOrPasswordException,
@@ -68,7 +74,10 @@ export class UserService {
       const userCreated = await newUser.save();
       return {
         message: 'User created successfully',
-        user: { id: `${userCreated['_id']}`, email: `${userCreated['email']}` },
+        user: {
+          id: `${userCreated['_id']}`,
+          email: `${userCreated['email']}`,
+        },
       };
     }
   }
@@ -79,6 +88,8 @@ export class UserService {
     if (!userFinder) {
       throw new wrongEmailOrPasswordException();
     } else {
+      const { email, password, _id, firstName, lastName } = userFinder;
+
       let passChecker = await bcrypt.compare(
         loginUserDto.password,
         userFinder.password,
@@ -128,10 +139,10 @@ export class UserService {
     const userFinder = await this.findOneUserByEmail(userEmailDto.email);
 
     if (!userFinder) {
-      throw new userNotFoundException(userEmailDto.email);
+      throw new noAccountFoundForSecurity();
     }
-
-    const email = userFinder['email'];
+    const { email, _id } = userFinder;
+    // const email = userFinder['email'];
 
     const verificationToken = await this.otpService.generateAndSendOtp(email);
 
@@ -139,10 +150,14 @@ export class UserService {
       message: 'Otp sended successfully',
       verificationToken: verificationToken,
       user: {
-        id: `${userFinder['_id']}`,
-        email: `${userFinder['email']}`,
+        id: `${_id}`,
+        email: `${email}`,
       },
     };
+  }
+  //i7wehxdjw8f78hwsg7hfimweuhfuidciusfcviucuiyasfgcuiasgcuisagcuyhsduyhcduyhcvuyshuhfsvfjhavuhcvsdauygc
+  async resetpassword(resetPasswordDto: ResetPasswordDto) {
+    const { id, newPassword, confirmPassword } = resetPasswordDto;
   }
 
   findAll() {

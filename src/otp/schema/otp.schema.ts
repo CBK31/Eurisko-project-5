@@ -12,7 +12,7 @@ export class OTP {
   verificationToken: string;
 
   @Prop({ required: true })
-  otpCode: Number;
+  otpCode: number;
 
   @Prop({ required: true })
   expirationDate: Date;

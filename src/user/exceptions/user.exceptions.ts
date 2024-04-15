@@ -34,3 +34,11 @@ export class wrongEmailOrPasswordException extends HttpException {
     super(`wrong email or password`, HttpStatus.BAD_REQUEST);
   }
 }
+export class noAccountFoundForSecurity extends HttpException {
+  constructor() {
+    super(
+      `If your account exists, you will receive an OTP shortly`,
+      HttpStatus.OK,
+    );
+  }
+}

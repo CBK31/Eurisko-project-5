@@ -15,6 +15,7 @@ import {
   activateUserDto,
   CreateUserDto,
   LoginUserDto,
+  ResetPasswordDto,
   UserEmailDto,
 } from './dto/user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -47,9 +48,11 @@ export class UserController {
     return await this.userService.forgetPassword(userEmailDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @UseGuards(AuthenticationGuard)
+  @Post('resetpassword')
+  @HttpCode(HttpStatus.OK)
+  async resetpassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return await this.userService.resetpassword(resetPasswordDto);
   }
 
   // from chatGPT to update my isActivate user

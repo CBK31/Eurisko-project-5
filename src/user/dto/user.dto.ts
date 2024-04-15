@@ -44,10 +44,22 @@ export class CreateCmsUserDto extends CreateUserDto {
 
 export class userIdDto {
   @IsNotEmpty()
-  @IsNumber()
+  @IsString()
   id: string;
 }
 export class activateUserDto extends userIdDto {
   @IsBoolean()
   isActivated: boolean;
+}
+
+export class ResetPasswordDto extends userIdDto {
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(8)
+  newPassword: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(8)
+  confirmPassword: string;
 }
