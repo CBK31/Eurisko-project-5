@@ -1,10 +1,12 @@
-// import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
-// export class UserAlreadyExistsException extends HttpException {
-//   constructor(email: string) {
-//     super(`User with email ${email} already exists`, HttpStatus.FORBIDDEN);
-//   }
-// }
+//CategoryNotFoundException
+
+export class CategoryNotFoundException extends HttpException {
+  constructor(categoryId: string) {
+    super(`category id : ${categoryId} not found`, HttpStatus.BAD_REQUEST);
+  }
+}
 
 // export class userNotFoundException extends HttpException {
 //   constructor(email: string) {

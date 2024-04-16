@@ -58,7 +58,6 @@ export class CategoryController {
   }
 
   //Get a list of complaint categories added by an admin
-  // i done it with pagination , i think its more logic
   @Get('paginated/:id')
   async GetCategoryPaginatedOfAnAdmin(
     @Query('page') page: string,
@@ -71,23 +70,23 @@ export class CategoryController {
   //Get my complaints category paginated
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   @Roles(['admin', 'employee'])
-  @Get('mycomplaintspaginated')
-  async GetMyComplaintsPaginated(
+  @Get('mycategoriespaginated')
+  async GetMyCategorysPaginated(
     @Query('page') page: string,
     @Query('limit') limit: string,
     @GetUser() userId: string,
   ) {
-    return this.categoryService.GetMyComplaintsPaginated(userId, page, limit);
+    return this.categoryService.GetMyCategorysPaginated(userId, page, limit);
   }
 
   //Get my complaint category by category id
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   @Roles(['admin', 'employee'])
-  @Get('/complaint/:id')
-  async getComplaintDetails(
+  @Get('categorybyid/:id')
+  async getCategoryDetailsById(
     @Param('id') id: string,
     @GetUser() userId: string,
   ) {
-    return this.categoryService.getComplaintDetailsById(id, userId);
+    return this.categoryService.getCategoryDetailsById(id, userId);
   }
 }

@@ -28,7 +28,7 @@ export class AuthenticationGuard implements CanActivate {
         }
       }
     } catch (error) {
-      console.log(error);
+      //  console.log(error);
       throw new unAuthenticateException();
     }
     return true;

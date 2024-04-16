@@ -1,16 +1,10 @@
 import {
-  IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsString,
   IsArray,
+  ArrayNotEmpty,
 } from 'class-validator';
-//   @IsNotEmpty()
-//   @IsMongoId()
-//   userId: string;
-
-//   @IsEnum(['PENDING', 'INPROGRESS', 'RESOLVED', 'REJECTED'])
-//   status: string;
 
 export class CreateComplaintDto {
   @IsNotEmpty()
@@ -23,6 +17,7 @@ export class CreateComplaintDto {
 
   @IsNotEmpty()
   @IsArray()
+  @ArrayNotEmpty()
   @IsMongoId({ each: true })
-  categorys: string[];
+  categories: string[];
 }

@@ -80,14 +80,14 @@ export class CategoryService {
   }
 
   async GetCategoryPaginatedOfAnAdmin(id, page, limit) {
-    return await this.getComplaintPaginatedByUserId(id, page, limit);
+    return await this.getCategorysPaginatedByUserId(id, page, limit);
   }
 
-  async GetMyComplaintsPaginated(id, page, limit) {
-    return await this.getComplaintPaginatedByUserId(id, page, limit);
+  async GetMyCategorysPaginated(id, page, limit) {
+    return await this.getCategorysPaginatedByUserId(id, page, limit);
   }
 
-  async getComplaintPaginatedByUserId(id, page, limit) {
+  async getCategorysPaginatedByUserId(id, page, limit) {
     const skip = (page - 1) * limit;
 
     const data = await this.CategoryModel.find({
@@ -102,17 +102,17 @@ export class CategoryService {
     return { data, total, page, limit };
   }
 
-  async getComplaintDetailsById(
-    complaintId: string,
+  async getCategoryDetailsById(
+    categoryId: string,
     userId: string,
   ): Promise<object> {
-    const complaint = await this.CategoryModel.findOne({
-      _id: complaintId,
+    const category = await this.CategoryModel.findOne({
+      _id: categoryId,
       createdBy: userId,
     }).exec();
-    if (!complaint) {
-      throw new CategoryNotFoundException(complaintId);
+    if (!category) {
+      throw new CategoryNotFoundException(categoryId);
     }
-    return complaint;
+    return category;
   }
 }

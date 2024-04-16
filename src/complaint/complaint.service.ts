@@ -1,26 +1,48 @@
 import { Injectable } from '@nestjs/common';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
 import { UpdateComplaintDto } from './dto/update-complaint.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Complaint } from './schemas/complaint.schema';
+import { Category } from 'src/category/schemas/category.schema';
+import { CategoryNotFoundException } from './exceptions/complaint.exceptions';
 
 @Injectable()
 export class ComplaintService {
-  create(createComplaintDto: CreateComplaintDto) {
-    return 'This action adds a new complaint';
-  }
+  constructor(
+    @InjectModel(Complaint.name) private ComplaintModel: Model<Complaint>,
+    @InjectModel(Category.name) private CategoryModel: Model<Category>,
+  ) {}
 
-  findAll() {
-    return `This action returns all complaint`;
-  }
+  async create(
+    createComplaintDto: CreateComplaintDto,
+    userId: string,
+  ): Promise<object> {
+    const complaintCount = await this.ComplaintModel.countDocuments();
+    const modifiedTitle = `${createComplaintDto.title}#${complaintCount + 1}`;
+    const { description, categories } = createComplaintDto;
 
-  findOne(id: number) {
-    return `This action returns a #${id} complaint`;
-  }
+    for (const categoryId of categories) {
+      const category = await this.CategoryModel.findById(categoryId).exec();
+      if (!category) {
+        throw new CategoryNotFoundException(categoryId);
+      }
+    }
 
-  update(id: number, updateComplaintDto: UpdateComplaintDto) {
-    return `This action updates a #${id} complaint`;
-  }
+    const newComplaint = new this.ComplaintModel({
+      createdBy: userId,
+      title: modifiedTitle,
+      description,
+      categories,
+    });
 
-  remove(id: number) {
-    return `This action removes a #${id} complaint`;
+    const complaintCreated = await newComplaint.save();
+    return {
+      message: 'Complaint created successfully',
+      complaint: {
+        id: `${complaintCreated['_id']}`,
+        titel: modifiedTitle,
+      },
+    };
   }
 }

@@ -6,14 +6,31 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { ComplaintService } from './complaint.service';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
 import { UpdateComplaintDto } from './dto/update-complaint.dto';
+import { AuthenticationGuard } from 'src/shared/guards/authentication.guard';
+import { GetUser } from 'src/shared/decorators/getUser.decorators';
+import { AuthorizationGuard } from 'src/shared/guards/authorization.guard';
+import { Roles } from 'src/shared/decorators/roles.decorators';
 
 @Controller('complaint')
 export class ComplaintController {
   constructor(private readonly complaintService: ComplaintService) {}
+
+  // @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  // @Roles(['admin', 'employee'])
+
+  @UseGuards(AuthenticationGuard)
+  @Post('create')
+  async createComplaint(
+    @Body() createComplaintDto: CreateComplaintDto,
+    @GetUser() userId: string,
+  ) {
+    return await this.complaintService.create(createComplaintDto, userId);
+  }
 
   // @Post()
   // create(@Body() createComplaintDto: CreateComplaintDto) {
