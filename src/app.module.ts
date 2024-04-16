@@ -8,6 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { SharedModule } from './shared/shared.module';
 import { OtpModule } from './otp/otp.module';
 import { CategoryModule } from './category/category.module';
+import { ComplaintModule } from './complaint/complaint.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { CategoryModule } from './category/category.module';
     SharedModule,
     OtpModule,
     CategoryModule,
+    ComplaintModule,
   ],
   controllers: [AppController],
   providers: [AppService],
