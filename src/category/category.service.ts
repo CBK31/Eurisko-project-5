@@ -12,4 +12,6 @@ export class CategoryService {
     @InjectModel(Category.name) private CategoryModel: Model<Category>,
     private configService: ConfigService,
   ) {}
+
+  async getCategoryPaginated(id) {}
 }
