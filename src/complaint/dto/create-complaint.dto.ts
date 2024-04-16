@@ -23,12 +23,6 @@ export class CreateComplaintDto {
   categories: string[];
 }
 
-// enum status {
-//   Admin = 'admin',
-//   Employee = 'employee',
-//   Client = 'client',
-// }
-
 enum status {
   PENDING = 'PENDING',
   INPROGRESS = 'INPROGRESS',

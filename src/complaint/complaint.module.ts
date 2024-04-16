@@ -18,7 +18,6 @@ import { Category, CategoryModel } from 'src/category/schemas/category.schema';
     MongooseModule.forFeature([{ name: User.name, schema: userModel }]),
     ConfigModule,
     SharedModule,
-    // JwtModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

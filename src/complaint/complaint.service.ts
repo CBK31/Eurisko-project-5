@@ -3,7 +3,6 @@ import {
   CreateComplaintDto,
   UpdateStatusDto,
 } from './dto/create-complaint.dto';
-import { UpdateComplaintDto } from './dto/update-complaint.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Complaint } from './schemas/complaint.schema';
@@ -164,7 +163,7 @@ export class ComplaintService {
       { new: true },
     );
     if (!updatedComplaint) {
-      //throw new ComplaintNotFoundException(complaintId);
+      throw new complaintNotFoundException(complaintId);
     }
     return {
       message: `Complaint status updated successfully to ${Status}`,

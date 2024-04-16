@@ -1,13 +1,4 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-  Length,
-  Max,
-  Min,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class SendOtpDto {
   @IsNotEmpty()
@@ -22,7 +13,5 @@ export class VerifyOtpDto extends SendOtpDto {
 
   @IsNotEmpty()
   @IsNumber()
-  // @Min(999) I'm unsure if detailing that much (min and max) exposes a vulnerability.
-  // @Max(10000)
   otpCode: number;
 }

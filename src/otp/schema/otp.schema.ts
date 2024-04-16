@@ -1,7 +1,6 @@
-// otp.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { User } from 'src/user/schemas/user.schema'; // Adjust the import based on your project structure
+import { User } from 'src/user/schemas/user.schema';
 
 @Schema()
 export class OTP {

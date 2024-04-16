@@ -12,7 +12,6 @@ import { User, userModel } from 'src/user/schemas/user.schema';
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: userModel }]),
     ConfigModule,
-    //  JwtModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

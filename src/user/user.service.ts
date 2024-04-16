@@ -323,28 +323,4 @@ export class UserService {
 
     return { data, total, page, limit };
   }
-  // const pipeline = [
-  //   {
-  //     $match: {
-  //       role: { $in: ['admin', 'employee'] },
-  //     },
-  //   },
-  //   {
-  //     $facet: {
-  //       data: [{ $skip: (page - 1) * limit }, { $limit: limit }],
-  //       total: [
-  //         {
-  //           $count: 'count',
-  //         },
-  //       ],
-  //     },
-  //   },
-  // ];
-
-  // const result = await this.userModel.aggregate(pipeline);
-
-  // const data = result[0].data;
-  // const total = result[0].total.length > 0 ? result[0].total[0].count : 0;
-
-  // return { data, total, page, limit };
 }

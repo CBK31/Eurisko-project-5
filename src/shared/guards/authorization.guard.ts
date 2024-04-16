@@ -20,19 +20,12 @@ export class AuthorizationGuard implements CanActivate {
 
       const userRoleObject = await this.userModel.findById(userId, 'role -_id');
       const userRole = userRoleObject.role;
-      // i replaced that code : (for faster querying)
-      // const user = await this.userModel.findById(userId);
-      //const userRole = user.role;
 
-      //  console.log('user id from token : ' + userId);
-
-      //    console.log('user ROLE from database : ' + userRoleObject.role);
       const requiredRoles = this.reflector.getAllAndOverride(myRoles, [
         context.getClass(),
 
         context.getHandler(),
       ]);
-      //console.log('required Roles from controller : ' + requiredRoles);
 
       if (!requiredRoles) {
         return true;
