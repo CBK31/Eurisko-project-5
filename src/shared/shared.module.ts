@@ -11,8 +11,8 @@ import { User, userModel } from 'src/user/schemas/user.schema';
   controllers: [],
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: userModel }]),
-
     ConfigModule,
+    //  JwtModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -23,6 +23,18 @@ import { User, userModel } from 'src/user/schemas/user.schema';
     }),
   ],
   providers: [AuthenticationGuard, AuthorizationGuard],
-  exports: [AuthenticationGuard, AuthorizationGuard],
+  exports: [
+    AuthenticationGuard,
+    AuthorizationGuard,
+    ConfigModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('secret.JWTsecretKey'),
+        signOptions: { expiresIn: '60s' },
+      }),
+    }),
+  ],
 })
 export class SharedModule {}

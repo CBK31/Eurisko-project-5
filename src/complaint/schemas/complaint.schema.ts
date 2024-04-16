@@ -11,7 +11,7 @@ export class Complaint {
   title: string;
 
   @Prop({ required: true })
-  complaintBody: string;
+  description: string;
 
   @Prop({ type: [Types.ObjectId], ref: User.name, required: true })
   categorys: Types.ObjectId[];

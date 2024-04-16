@@ -142,7 +142,7 @@ export class OtpService {
       };
 
       return {
-        message: 'Otp sended successfully',
+        message: 'Otp verified successfully',
         accessToken: this.jwtService.sign(payload),
         user: {
           id: `${OtpFinderAndValidator['userId']}`,

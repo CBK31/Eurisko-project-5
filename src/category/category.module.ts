@@ -12,17 +12,17 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: userModel }]),
     MongooseModule.forFeature([{ name: Category.name, schema: CategoryModel }]),
-    ConfigModule,
+    // ConfigModule,
     SharedModule,
-    JwtModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('secret.JWTsecretKey'),
-        signOptions: { expiresIn: '300s' },
-      }),
-    }),
+
+    // JwtModule.registerAsync({
+    //   imports: [ConfigModule],
+    //   inject: [ConfigService],
+    //   useFactory: (configService: ConfigService) => ({
+    //     secret: configService.get<string>('secret.JWTsecretKey'),
+    //     signOptions: { expiresIn: '300s' },
+    //   }),
+    // }),
   ],
   controllers: [CategoryController],
   providers: [CategoryService],

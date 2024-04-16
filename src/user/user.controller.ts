@@ -74,7 +74,7 @@ export class UserController {
     return await this.userService.resetPassword(resetPasswordDto, userId);
   }
 
-  @Get('getaccesstoken')
+  @Get('getaccesstoken/:id')
   async getaccessToken(
     @Body() getAccessTokenDto: GetAccessTokenDto,
     @Param('id') id: string,
