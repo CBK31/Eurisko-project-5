@@ -106,7 +106,7 @@ export class UserService {
     }
   }
 
-  async createCmsUser(createCmsUserDto: CreateCmsUserDto) {
+  async createCmsUser(createCmsUserDto: CreateCmsUserDto): Promise<object> {
     if (await this.findOneUserByEmail(createCmsUserDto.email)) {
       throw new UserAlreadyExistsException(createCmsUserDto.email);
     } else {
@@ -133,7 +133,7 @@ export class UserService {
     }
   }
 
-  async logIn(loginUserDto: LoginUserDto) {
+  async logIn(loginUserDto: LoginUserDto): Promise<object> {
     const userFinder = await this.findOneUserByEmail(loginUserDto.email);
 
     if (!userFinder) {
@@ -178,7 +178,7 @@ export class UserService {
     }
   }
 
-  async forgetPassword(userEmailDto: UserEmailDto) {
+  async forgetPassword(userEmailDto: UserEmailDto): Promise<object> {
     const userFinder = await this.findOneUserByEmail(userEmailDto.email);
 
     if (!userFinder) {
@@ -198,7 +198,10 @@ export class UserService {
     };
   }
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto, userId) {
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+    userId,
+  ): Promise<object> {
     const { newPassword, confirmPassword } = resetPasswordDto;
     if (newPassword == confirmPassword) {
       const userFinder = await this.findUserById(userId);
@@ -216,7 +219,10 @@ export class UserService {
     throw new resetPasswordException();
   }
 
-  async changePassword(changePasswordDto: ChangePasswordDto, userId) {
+  async changePassword(
+    changePasswordDto: ChangePasswordDto,
+    userId,
+  ): Promise<object> {
     const { oldPassword, newPassword } = changePasswordDto;
     const userFinder = await this.findUserById(userId);
     const { password, email } = userFinder;
@@ -236,7 +242,10 @@ export class UserService {
     throw new PasswordUnmatchException();
   }
 
-  async getaccesstoken(id, getAccessTokenDto: GetAccessTokenDto) {
+  async getaccesstoken(
+    id,
+    getAccessTokenDto: GetAccessTokenDto,
+  ): Promise<object> {
     const { refreshToken } = getAccessTokenDto;
 
     const refreshTokenFinder = await this.findRefreshToken(id);
@@ -259,7 +268,10 @@ export class UserService {
     throw new refreshTokenOrUserInvalidException();
   }
 
-  async updateActivationStatus(id: string, isActivated: boolean) {
+  async updateActivationStatus(
+    id: string,
+    isActivated: boolean,
+  ): Promise<object> {
     const userFinder = await this.findUserById(id);
     if (!userFinder) {
       throw new UserIdNotFoundException();
@@ -336,20 +348,4 @@ export class UserService {
   // const total = result[0].total.length > 0 ? result[0].total[0].count : 0;
 
   // return { data, total, page, limit };
-
-  // findAll() {
-  //   return `This action returns all user`;
-  // }
-
-  // findOne(id: number) {
-  //   return `This action returns a #${id} user`;
-  // }
-
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} user`;
-  // }
 }
