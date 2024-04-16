@@ -24,7 +24,8 @@ export class CategoryController {
 
   // ------------------------------------------------------------------------------
 
-  //
+  // Note: Extra routes implemented due to an error of reading
+  //   between "complaint category" and "complaint" in the assignment instructions.
 
   //-------------------------------------------------------------------------------
 
