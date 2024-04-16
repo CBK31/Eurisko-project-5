@@ -84,7 +84,7 @@ export class UserController {
 
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   @Roles(['admin', 'employee'])
-  @Patch(':id/activate')
+  @Patch('activate/:id')
   async updateActivationStatus(
     @Param('id') id: string,
     @Body() activateUserDto: ActivateUserDto,
@@ -97,7 +97,7 @@ export class UserController {
 
   @UseGuards(AuthenticationGuard, AuthorizationGuard)
   @Roles(['admin'])
-  @Patch(':id/toadmin')
+  @Patch('toadmin/:id')
   async CmsRoleToAdmin(@Param('id') id: string) {
     return this.userService.CmsRoleToAdmin(id);
   }

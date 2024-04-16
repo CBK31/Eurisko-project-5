@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CategoryController } from './category.controller';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, userModel } from 'src/user/schemas/user.schema';
 import { Category, CategoryModel } from './schemas/category.schema';
@@ -15,6 +15,14 @@ import { JwtModule } from '@nestjs/jwt';
     ConfigModule,
     SharedModule,
     JwtModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('secret.JWTsecretKey'),
+        signOptions: { expiresIn: '300s' },
+      }),
+    }),
   ],
   controllers: [CategoryController],
   providers: [CategoryService],

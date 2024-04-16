@@ -20,9 +20,9 @@ export class AuthenticationGuard implements CanActivate {
       if (!token) {
         throw new unAuthenticateException();
       } else {
+        //
         requestInfo.user = this.jwtService.verify(token);
         const userFinder = await this.userModel.findById(requestInfo.user.id);
-
         if (!userFinder || !userFinder['isActivated']) {
           throw new unAuthenticateException();
         }

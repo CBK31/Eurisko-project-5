@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { User } from 'src/user/schemas/user.schema';
 import { OTP } from './schema/otp.schema';
 import { ConfigService } from '@nestjs/config';
-import { GenerateOtpDto, SendOtpDto, VerifyOtpDto } from './dto/otp-dto';
+import { VerifyOtpDto } from './dto/otp-dto';
 import * as crypto from 'crypto';
 import {
   InvalidOtpException,

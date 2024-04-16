@@ -22,22 +22,15 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
-  // @UseGuards(AuthenticationGuard, AuthorizationGuard)
-  // @Roles(['admin', 'employee'])
-  @Get(':id/paginated')
-  async GetCategoryPaginated(
-    @Query('page') page: string,
-    @Query('limit') limit: string,
-    @Param('id') id: string,
-  ) {
-    return this.categoryService.getCategoryPaginated(id, page, limit);
-  }
-
   // ------------------------------------------------------------------------------
 
-  // @UseGuards(AuthenticationGuard, AuthorizationGuard)
-  // @Roles(['admin', 'employee'])
-  @Post()
+  //
+
+  //-------------------------------------------------------------------------------
+
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Roles(['admin', 'employee'])
+  @Post('create')
   async addCategory(
     @Body() createCategoryDto: CreateCategoryDto,
     @GetUser() userId: string,
@@ -45,9 +38,9 @@ export class CategoryController {
     return this.categoryService.addCategory(createCategoryDto, userId);
   }
 
-  // @UseGuards(AuthenticationGuard, AuthorizationGuard)
-  // @Roles(['admin', 'employee'])
-  @Patch(':id')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Roles(['admin', 'employee'])
+  @Patch('update/:id')
   async updateCategory(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
@@ -56,10 +49,44 @@ export class CategoryController {
     return this.categoryService.updateCategory(id, updateCategoryDto, userId);
   }
 
-  // @UseGuards(AuthenticationGuard, AuthorizationGuard)
-  // @Roles(['admin', 'employee'])
-  @Delete(':id')
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Roles(['admin', 'employee'])
+  @Delete('delete/:id')
   async deleteCategory(@Param('id') id: string, @GetUser() userId: string) {
     return this.categoryService.deleteCategory(id, userId);
+  }
+
+  //Get a list of complaint categories added by an admin
+  // i done it with pagination , i think its more logic
+  @Get('paginated/:id')
+  async GetCategoryPaginatedOfAnAdmin(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Param('id') id: string,
+  ) {
+    return this.categoryService.GetCategoryPaginatedOfAnAdmin(id, page, limit);
+  }
+
+  //Get my complaints category paginated
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Roles(['admin', 'employee'])
+  @Get('mycomplaintspaginated')
+  async GetMyComplaintsPaginated(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @GetUser() userId: string,
+  ) {
+    return this.categoryService.GetMyComplaintsPaginated(userId, page, limit);
+  }
+
+  //Get my complaint category by category id
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Roles(['admin', 'employee'])
+  @Get('/complaint/:id')
+  async getComplaintDetails(
+    @Param('id') id: string,
+    @GetUser() userId: string,
+  ) {
+    return this.categoryService.getComplaintDetailsById(id, userId);
   }
 }

@@ -6,7 +6,8 @@ import { User } from 'src/user/schemas/user.schema';
 import { Category } from './schemas/category.schema';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-
+import { CategoryNotFoundException } from './exceptions/category.exceptions';
+import { Roles } from 'src/shared/decorators/roles.decorators';
 @Injectable()
 export class CategoryService {
   constructor(
@@ -14,22 +15,6 @@ export class CategoryService {
     @InjectModel(Category.name) private CategoryModel: Model<Category>,
     private configService: ConfigService,
   ) {}
-
-  async getCategoryPaginated(id, page, limit) {
-    const skip = (page - 1) * limit;
-
-    const data = await this.CategoryModel.find({
-      role: { $in: ['admin', 'employee'] },
-    })
-      .find({ createdBy: id })
-      .skip(skip)
-      .limit(limit)
-      .exec();
-
-    const total = Object.keys(data).length;
-
-    return { data, total, page, limit };
-  }
 
   async addCategory(
     createCategoryDto: CreateCategoryDto,
@@ -41,12 +26,14 @@ export class CategoryService {
       description,
       createdBy,
     });
-    await newCategory.save();
+    newCategory.save();
 
     return {
       message: 'category created successfully',
-      user: {
-        categoryName: name,
+      category: {
+        Name: name,
+        Description: description,
+        createdBy: createdBy,
       },
     };
   }
@@ -55,27 +42,77 @@ export class CategoryService {
     id: string,
     updateCategoryDto: UpdateCategoryDto,
     userId: string,
-  ): Promise<Category> {
+  ): Promise<object> {
     const updatedCategory = await this.CategoryModel.findByIdAndUpdate(
       id,
       { ...updateCategoryDto, createdBy: userId },
       { new: true },
     );
     if (!updatedCategory) {
-      throw new NotFoundException(`Category with ID "${id}" not found`);
+      throw new CategoryNotFoundException(id);
     }
-    return updatedCategory;
+    const { name, description, createdBy } = updatedCategory;
+    return {
+      message: 'category updated successfully',
+      category: {
+        Name: name,
+        Description: description,
+        createdBy: createdBy,
+      },
+    };
   }
 
-  async deleteCategory(id: string, userId: string): Promise<void> {
+  async deleteCategory(id: string, userId: string): Promise<object> {
     const result = await this.CategoryModel.deleteOne({
       _id: id,
       createdBy: userId,
     }).exec();
     if (result.deletedCount === 0) {
-      throw new NotFoundException(
-        `Category with ID "${id}" not found or you're not the owner`,
-      );
+      throw new CategoryNotFoundException(id);
     }
+
+    return {
+      message: 'category deleted successfully',
+      category: {
+        CategoryId: id,
+      },
+    };
+  }
+
+  async GetCategoryPaginatedOfAnAdmin(id, page, limit) {
+    return await this.getComplaintPaginatedByUserId(id, page, limit);
+  }
+
+  async GetMyComplaintsPaginated(id, page, limit) {
+    return await this.getComplaintPaginatedByUserId(id, page, limit);
+  }
+
+  async getComplaintPaginatedByUserId(id, page, limit) {
+    const skip = (page - 1) * limit;
+
+    const data = await this.CategoryModel.find({
+      createdBy: id,
+    })
+      .skip(skip)
+      .limit(limit)
+      .exec();
+
+    const total = Object.keys(data).length;
+
+    return { data, total, page, limit };
+  }
+
+  async getComplaintDetailsById(
+    complaintId: string,
+    userId: string,
+  ): Promise<object> {
+    const complaint = await this.CategoryModel.findOne({
+      _id: complaintId,
+      createdBy: userId,
+    }).exec();
+    if (!complaint) {
+      throw new CategoryNotFoundException(complaintId);
+    }
+    return complaint;
   }
 }

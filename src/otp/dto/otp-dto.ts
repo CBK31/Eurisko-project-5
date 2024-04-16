@@ -14,11 +14,6 @@ export class SendOtpDto {
   @IsEmail()
   email: string;
 }
-export class GenerateOtpDto extends SendOtpDto {
-  @IsNotEmpty()
-  @IsNumber()
-  id: string;
-}
 
 export class VerifyOtpDto extends SendOtpDto {
   @IsNotEmpty()

@@ -9,8 +9,7 @@ import {
   ResetPasswordDto,
   UserEmailDto,
 } from './dto/user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { Model, ObjectId, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import * as bcrypt from 'bcrypt';
