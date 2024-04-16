@@ -79,7 +79,7 @@ export class UserService {
     return await this.RefreshTokenModel.deleteOne({ userId: userId });
   }
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto): Promise<object> {
     if (await this.findOneUserByEmail(createUserDto.email)) {
       throw new UserAlreadyExistsException(createUserDto.email);
     } else {
@@ -277,7 +277,7 @@ export class UserService {
     };
   }
 
-  async CmsRoleToAdmin(id) {
+  async CmsRoleToAdmin(id): Promise<object> {
     const userFinder = await this.findUserById(id);
     if (!userFinder) {
       throw new UserIdNotFoundException();
@@ -295,11 +295,11 @@ export class UserService {
     };
   }
 
-  async GetMyCmsDetails(id) {
+  async GetMyCmsDetails(id): Promise<object> {
     return await this.findUserById(id);
   }
 
-  async GetAllCmsDetails(page: number, limit: number) {
+  async GetAllCmsDetails(page: number, limit: number): Promise<object> {
     const skip = (page - 1) * limit;
 
     const data = await this.userModel
@@ -308,9 +308,7 @@ export class UserService {
       .limit(limit)
       .exec();
 
-    const total = await this.userModel.countDocuments({
-      role: { $in: ['admin', 'employee'] },
-    });
+    const total = Object.keys(data).length;
 
     return { data, total, page, limit };
   }

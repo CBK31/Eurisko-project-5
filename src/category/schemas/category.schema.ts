@@ -5,7 +5,7 @@ import { User } from 'src/user/schemas/user.schema';
 @Schema()
 export class Category {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-  userId: Types.ObjectId;
+  createdBy: Types.ObjectId;
 
   @Prop({ required: true })
   name: string;
