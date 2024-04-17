@@ -11,6 +11,6 @@ export class otpAlreadyExistAndValidException extends HttpException {
 
 export class InvalidOtpException extends HttpException {
   constructor() {
-    super(`invalid OTP`, HttpStatus.FORBIDDEN);
+    super(`OTP verification failed`, HttpStatus.FORBIDDEN);
   }
 }
