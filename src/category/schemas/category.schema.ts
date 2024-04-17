@@ -15,3 +15,4 @@ export class Category {
 }
 export const CategoryModel = SchemaFactory.createForClass(Category);
 export type CategoryDocument = HydratedDocument<Category>;
+CategoryModel.index({ createdBy: 1 });

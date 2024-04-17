@@ -21,5 +21,8 @@ export class User {
   @Prop({ default: true })
   isActivated: boolean;
 }
+
 export type userDocument = HydratedDocument<User>;
 export const userModel = SchemaFactory.createForClass(User);
+userModel.index({ email: 1 });
+userModel.index({ role: 1 });

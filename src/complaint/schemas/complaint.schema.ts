@@ -25,3 +25,4 @@ export class Complaint {
 }
 export const ComplaintModel = SchemaFactory.createForClass(Complaint);
 export type ComplaintDocument = HydratedDocument<Complaint>;
+ComplaintModel.index({ createdBy: 1, status: 1 });

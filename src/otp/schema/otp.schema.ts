@@ -25,3 +25,4 @@ export class OTP {
 
 export const OTPModel = SchemaFactory.createForClass(OTP);
 export type OTPDocument = HydratedDocument<OTP>;
+OTPModel.index({ userId: 1 });
